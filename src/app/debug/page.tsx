@@ -101,13 +101,14 @@ export default function DebugPage() {
           <h2 className="text-xl font-semibold mb-4 text-yellow-800">Hướng dẫn debug</h2>
           <ol className="list-decimal list-inside space-y-2 text-yellow-700">
             <li>Đầu tiên hãy đăng nhập vào hệ thống</li>
-            <li>Sau đó test API "Check Owner Permission"</li>
+            <li>Sau đó test API &quot;Check Owner Permission&quot;</li>
             <li>Kiểm tra kết quả để xem có lỗi gì</li>
             <li>Nếu có lỗi, kiểm tra logs trên Vercel console</li>
-            <li>Test API "FAMS Link" để xem có tạo được link không</li>
+            <li>Test API &quot;FAMS Link&quot; để xem có tạo được link không</li>
           </ol>
         </div>
       </div>
     </div>
   )
 }
+
