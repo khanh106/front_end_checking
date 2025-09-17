@@ -12,6 +12,7 @@ export function ClientLayout() {
   const adminPages = new Set<string>([
     "/dashboard",
     "/settings",
+    "/activity",
     "/integrations/api-keys",
     "/integrations/activity",
     "/docs",
