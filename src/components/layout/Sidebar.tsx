@@ -1,9 +1,47 @@
 "use client"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useEffect, useState } from "react"
 
 export default function Sidebar() {
   const pathname = usePathname()
+  const [hasOwnerPermission, setHasOwnerPermission] = useState(false)
+  const [isCheckingPermission, setIsCheckingPermission] = useState(true)
+
+  useEffect(() => {
+    const checkPermission = async () => {
+      const cachedPermission = localStorage.getItem('fams-permission')
+      const cachedTime = localStorage.getItem('fams-permission-time')
+      
+      if (cachedPermission && cachedTime) {
+        const timeDiff = Date.now() - parseInt(cachedTime)
+        if (timeDiff < 5 * 60 * 1000) {
+          setHasOwnerPermission(cachedPermission === 'true')
+          setIsCheckingPermission(false)
+          return
+        }
+      }
+
+      try {
+        const response = await fetch("/api/auth/check-owner", {
+          method: "GET",
+          credentials: "include"
+        })
+        const data = await response.json()
+        const permission = data.hasPermission || false
+        setHasOwnerPermission(permission)
+        
+        localStorage.setItem('fams-permission', permission.toString())
+        localStorage.setItem('fams-permission-time', Date.now().toString())
+      } catch {
+        setHasOwnerPermission(false)
+      } finally {
+        setIsCheckingPermission(false)
+      }
+    }
+
+    checkPermission()
+  }, [])
   const groups = [
     {
       title: "BẢNG ĐIỀU KHIỂN FAMS",
@@ -42,7 +80,7 @@ export default function Sidebar() {
           )
         },
         {
-          href: "/integrations/docs",
+          href: "/docs",
           label: "Tài Liệu Hướng Dẫn",
           icon: (
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" className="text-gray-600">
@@ -52,7 +90,7 @@ export default function Sidebar() {
           )
         },
         {
-          href: "/integrations/activity",
+          href: "/activity",
           label: "Lịch Sử Hoạt Động",
           icon: (
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" className="text-gray-600">
@@ -68,7 +106,9 @@ export default function Sidebar() {
   return (
     <aside className="w-64 shrink-0 border-r bg-white hidden md:flex md:flex-col md:fixed md:inset-y-0 md:left-0 md:z-30">
       <div className="h-16 border-b flex items-center px-4">
-        <img src="/tira-logo.svg" alt="logo" className="h-7 w-auto" />
+        <Link href="/dashboard" className="hover:opacity-80 transition-opacity">
+          <img src="/tira-logo.svg" alt="logo" className="h-7 w-auto" />
+        </Link>
       </div>
       <nav className="flex-1 px-3 py-2 space-y-6 overflow-y-auto">
         {groups.map(group => (
@@ -98,16 +138,31 @@ export default function Sidebar() {
         ))}
       </nav>
       <div className="p-4 border-t">
-        <a
-          href="/fams"
-          className="w-full inline-flex items-center justify-center gap-2 rounded-md border px-4 py-2 text-gray-800 hover:bg-gray-50"
-        >
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" className="text-gray-700">
-            <path d="M14 3h7v7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M10 14L21 3M10 3H3v18h18v-7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          Truy Cập FAMS
-        </a>
+        {isCheckingPermission ? (
+          <div className="w-full inline-flex items-center justify-center gap-2 rounded-md border px-4 py-2 text-gray-500 bg-gray-50">
+            <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
+            <span>Đang kiểm tra quyền...</span>
+          </div>
+        ) : hasOwnerPermission ? (
+          <Link
+            href="/fams"
+            className="w-full inline-flex items-center justify-center gap-2 rounded-md border px-4 py-2 text-gray-800 hover:bg-gray-50 transition-colors"
+          >
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" className="text-gray-700">
+              <path d="M14 3h7v7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M10 14L21 3M10 3H3v18h18v-7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            Truy Cập FAMS
+          </Link>
+        ) : (
+          <div className="w-full inline-flex items-center justify-center gap-2 rounded-md border px-4 py-2 text-gray-400 bg-gray-50 cursor-not-allowed">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" className="text-gray-400">
+              <path d="M14 3h7v7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M10 14L21 3M10 3H3v18h18v-7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            Truy Cập FAMS
+          </div>
+        )}
       </div>
     </aside>
   )

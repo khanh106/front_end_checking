@@ -14,9 +14,12 @@ export async function POST(request: NextRequest) {
     const cookieName = process.env.COOKIE_NAME || "auth_token"
     const devAdminEmail = process.env.DEV_ADMIN_EMAIL || "admin@gmail.com"
     const devAdminPassword = process.env.DEV_ADMIN_PASSWORD || "Admin123"
+    const devAdmin1Email = process.env.DEV_ADMIN1_EMAIL || "admin1@gmail.com"
+    const devAdmin1Password = process.env.DEV_ADMIN1_PASSWORD || "Admin123"
 
     if (process.env.NODE_ENV !== "production") {
-      if (email === devAdminEmail && password === devAdminPassword) {
+      if ((email === devAdminEmail && password === devAdminPassword) || 
+          (email === devAdmin1Email && password === devAdmin1Password)) {
         const res = NextResponse.json({ success: true, dev: true })
         res.cookies.set(cookieName, "dev-admin-token", {
           httpOnly: true,

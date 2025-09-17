@@ -12,25 +12,7 @@ interface ApiKey {
   lastUsed?: string
 }
 
-let apiKeys: ApiKey[] = [
-  {
-    id: '1',
-    name: 'Production API Key',
-    apiKey: 'ak_live_1234567890abcdef',
-    secretKey: 'sk_live_abcdef1234567890',
-    status: 'active',
-    createdAt: new Date().toISOString(),
-    lastUsed: new Date(Date.now() - 86400000).toISOString()
-  },
-  {
-    id: '2',
-    name: 'Development API Key',
-    apiKey: 'ak_test_0987654321fedcba',
-    secretKey: 'sk_test_fedcba0987654321',
-    status: 'active',
-    createdAt: new Date(Date.now() - 172800000).toISOString()
-  }
-]
+let apiKeys: ApiKey[] = []
 
 export async function getApiKeys(): Promise<ApiKey[]> {
   return apiKeys.filter(key => key.status === 'active')
@@ -38,6 +20,11 @@ export async function getApiKeys(): Promise<ApiKey[]> {
 
 export async function createApiKey(name: string): Promise<ApiKey | null> {
   try {
+    const activeKeys = apiKeys.filter(key => key.status === 'active')
+    if (activeKeys.length > 0) {
+      throw new Error('Mỗi tài khoản admin chỉ được có 1 API key và Secret Key duy nhất.')
+    }
+    
     const id = randomBytes(16).toString('hex')
     const apiKey = `ak_live_${randomBytes(16).toString('hex')}`
     const secretKey = `sk_live_${randomBytes(32).toString('hex')}`

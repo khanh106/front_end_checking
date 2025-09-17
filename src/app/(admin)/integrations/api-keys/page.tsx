@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react'
 import ApiKeyCard from '@/components/cards/ApiKeyCard'
 import { Button } from '@/components/ui/button'
-import { Plus, RefreshCw, ChevronDown } from 'lucide-react'
-import { getApiKeys, createApiKey, revokeApiKey, rotateApiKey, logSecretView } from '@/server/actions/api-keys'
+import { Plus, ChevronDown } from 'lucide-react'
+import { getApiKeys, createApiKey, revokeApiKey, logSecretView } from '@/server/actions/api-keys'
 
 interface ApiKey {
   id: string
@@ -40,9 +40,12 @@ export default function ApiKeysPage() {
       const newKey = await createApiKey(`API Key ${new Date().toLocaleString()}`)
       if (newKey) {
         await fetchApiKeys()
+      } else {
+        alert('Không thể tạo API key. Vui lòng thử lại sau.')
       }
     } catch (error) {
       console.error('Lỗi khi tạo API key:', error)
+      alert('Đã xảy ra lỗi khi tạo API key. Vui lòng thử lại sau.')
     } finally {
       setCreating(false)
     }
@@ -59,16 +62,6 @@ export default function ApiKeysPage() {
     }
   }
 
-  const handleRotate = async (id: string) => {
-    try {
-      const rotatedKey = await rotateApiKey(id)
-      if (rotatedKey) {
-        await fetchApiKeys()
-      }
-    } catch (error) {
-      console.error('Lỗi khi xoay API key:', error)
-    }
-  }
 
   const handleSecretView = async (keyId: string) => {
     try {
@@ -104,6 +97,11 @@ export default function ApiKeysPage() {
         <div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Quản Lý API & Khóa</h1>
           <p className="text-gray-600">Quản lý các khóa API và Secret Key để tích hợp dữ liệu chấm công vào hệ thống của bạn.</p>
+          <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-sm text-blue-800">
+              <strong>Lưu ý:</strong> Bạn có thể tạo khóa API mới, thu hồi khóa hiện tại hoặc quản lý các khóa đã tạo.
+            </p>
+          </div>
         </div>
       </div>
 
@@ -127,10 +125,6 @@ export default function ApiKeysPage() {
         ) : apiKeys.length === 0 ? (
           <div className="text-center py-8">
             <p className="text-gray-500 mb-4">Chưa có API key nào</p>
-            <Button onClick={createNewKey} disabled={creating} className="bg-blue-600 hover:bg-blue-700 text-white">
-              <Plus className="h-4 w-4 mr-2" />
-              Tạo API Key đầu tiên
-            </Button>
           </div>
         ) : (
           <div className="space-y-6">
@@ -189,17 +183,19 @@ export default function ApiKeysPage() {
                     </span>
                   </div>
                   
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleRevoke(apiKey.id)}
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                  >
-                    <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                    Thu Hồi Khóa
-                  </Button>
+                  <div className="flex items-center space-x-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleRevoke(apiKey.id)}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                      Thu Hồi Khóa
+                    </Button>
+                  </div>
                 </div>
               </div>
             ))}
@@ -255,6 +251,7 @@ export default function ApiKeysPage() {
           ))}
         </div>
       </div>
+      
     </div>
   )
 }

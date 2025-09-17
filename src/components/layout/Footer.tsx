@@ -7,8 +7,8 @@ interface FooterProps {
 export default function Footer({ isLoggedIn = false }: FooterProps) {
   return (
     <footer
-      className={`fixed bottom-0 z-40 border-t bg-white/60 backdrop-blur supports-[backdrop-filter]:bg-white/40
-      ${isLoggedIn ? "left-0 w-full md:left-64 md:w-[calc(100%-16rem)]" : "left-0 w-full"}`}
+      className={`border-t bg-white/60 backdrop-blur supports-[backdrop-filter]:bg-white/40
+      ${isLoggedIn ? "w-full" : "w-full"}`}
     >
       <div className="mx-auto max-w-6xl px-4 py-4 flex items-center justify-between text-sm text-gray-600">
         <nav className="flex gap-6">
