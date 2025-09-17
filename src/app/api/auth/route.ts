@@ -17,18 +17,16 @@ export async function POST(request: NextRequest) {
     const devAdmin1Email = process.env.DEV_ADMIN1_EMAIL || "admin1@gmail.com"
     const devAdmin1Password = process.env.DEV_ADMIN1_PASSWORD || "Admin123"
 
-    if (process.env.NODE_ENV !== "production") {
-      if ((email === devAdminEmail && password === devAdminPassword) || 
-          (email === devAdmin1Email && password === devAdmin1Password)) {
-        const res = NextResponse.json({ success: true, dev: true })
-        res.cookies.set(cookieName, "dev-admin-token", {
-          httpOnly: true,
-          secure: false,
-          sameSite: "lax",
-          path: "/"
-        })
-        return res
-      }
+    if ((email === devAdminEmail && password === devAdminPassword) || 
+        (email === devAdmin1Email && password === devAdmin1Password)) {
+      const res = NextResponse.json({ success: true, dev: true })
+      res.cookies.set(cookieName, "dev-admin-token", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/"
+      })
+      return res
     }
 
     if (!apiBaseUrl) {
