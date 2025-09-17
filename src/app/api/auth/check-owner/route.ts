@@ -5,21 +5,30 @@ export async function GET(request: NextRequest) {
     const cookieName = process.env.COOKIE_NAME || "auth_token"
     const token = request.cookies.get(cookieName)?.value
 
+    console.log("[check-owner] NODE_ENV:", process.env.NODE_ENV)
+    console.log("[check-owner] Token exists:", !!token)
+
     if (!token) {
-      return NextResponse.json({ hasPermission: false })
+      console.log("[check-owner] No token found")
+      return NextResponse.json({ hasPermission: false, error: "No token" })
     }
 
     if (process.env.NODE_ENV !== "production") {
       if (token === "dev-admin-token") {
+        console.log("[check-owner] Dev admin token detected")
         return NextResponse.json({ hasPermission: true, dev: true })
       }
     }
 
-    const apiBaseUrl = process.env.API_BASE_URL || ""
+    const apiBaseUrl = process.env.API_BASE_URL
+    console.log("[check-owner] API_BASE_URL exists:", !!apiBaseUrl)
+    
     if (!apiBaseUrl) {
-      return NextResponse.json({ hasPermission: false })
+      console.log("[check-owner] Missing API_BASE_URL")
+      return NextResponse.json({ hasPermission: false, error: "Missing API_BASE_URL" })
     }
 
+    console.log("[check-owner] Calling backend auth/me")
     const response = await fetch(`${apiBaseUrl}/auth/me`, {
       method: "GET",
       headers: { 
@@ -28,15 +37,23 @@ export async function GET(request: NextRequest) {
       }
     })
 
+    console.log("[check-owner] Backend response status:", response.status)
+
     if (!response.ok) {
-      return NextResponse.json({ hasPermission: false })
+      const errorText = await response.text().catch(() => "Unknown error")
+      console.log("[check-owner] Backend error:", errorText)
+      return NextResponse.json({ hasPermission: false, error: `Backend error: ${response.status}` })
     }
 
     const data = await response.json().catch(() => ({}))
+    console.log("[check-owner] Backend data:", data)
+    
     const hasPermission = data?.role === "OWNER" || data?.permissions?.includes("OWNER")
+    console.log("[check-owner] Has permission:", hasPermission)
     
     return NextResponse.json({ hasPermission })
-  } catch {
-    return NextResponse.json({ hasPermission: false })
+  } catch (error) {
+    console.error("[check-owner] Error:", error)
+    return NextResponse.json({ hasPermission: false, error: "Server error" })
   }
 }
